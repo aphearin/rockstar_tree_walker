@@ -74,20 +74,14 @@ start = time()
 for tree_fname in fname_generator(args.input_dirname, args.input_hlist_filepat):
     print("...working on {0}".format(os.path.basename(tree_fname)))
 
-    # Uncompress the file if necessary
-    try:
-        assert tree_fname[-4:] == ".dat", "Input filename must conclude with '.dat'"
-    except AssertionError:
-        os.system("gunzip -f " + tree_fname)
-        tree_fname = tree_fname[:-3]
-        assert tree_fname[-4:] == ".dat", "Input filename must conclude with '.dat'"
-
     # Read the ascii data for the subvolume
     subvolume_data = np.array(list(mmp_row_generator(tree_fname,
         mmp_col_index, desc_id_col_index, halo_id_col_index, *colnums_to_yield)), dtype=output_dt)
 
     # Write the data to a Numpy binary
-    subvol_output_dirname = os.path.join(args.output_dirname, "subvol_"+tree_fname[-9:-4])
+    idx_last = tree_fname.find('.')
+    idx_first = idx_last - 5
+    subvol_output_dirname = os.path.join(args.output_dirname, "subvol_"+tree_fname[idx_first:idx_last])
     store_structured_array_columns(subvolume_data, subvol_output_dirname)
 
     # Save the array storing the indices of the trunks

@@ -1,6 +1,22 @@
 """ Module containing the generator used to walk full rockstar merger trees and
 return the main progenitor histories.
 """
+import gzip
+
+
+def _compression_safe_opener(fname):
+    """ Determine whether to use *open* or *gzip.open* to read
+    the input file, depending on whether or not the file is compressed.
+    """
+    f = gzip.open(fname, 'r')
+    try:
+        f.read(1)
+        opener = gzip.open
+    except IOError:
+        opener = open
+    finally:
+        f.close()
+    return opener
 
 
 def mmp_row_generator(tree_fname, mmp_col_index, desc_id_col_index, halo_id_col_index,
@@ -33,7 +49,8 @@ def mmp_row_generator(tree_fname, mmp_col_index, desc_id_col_index, halo_id_col_
         has its data stored as a string.
 
     """
-    with open(tree_fname, 'r') as f:
+    opener = _compression_safe_opener(tree_fname)
+    with opener(tree_fname, 'r') as f:
 
         # Skip the header, extracting num_trees
         while True:
